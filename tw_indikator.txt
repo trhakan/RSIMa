@@ -1,0 +1,30 @@
+//@version=5
+indicator(title="RSIMa", shorttitle="RSIMa", overlay=true)
+Xclose = request.security("XU100", timeframe.period, close)
+XGFark   = ((Xclose[0] - Xclose[1]) / Xclose[1]) * 100
+
+//Super Trend
+ST_src = input(hl2, title='Source')
+ST_atr = ta.atr(10)
+ST_up = ST_src - 3.0 * ST_atr
+ST_up1 = nz(ST_up[1], ST_up)
+ST_up := close[1] > ST_up1 ? math.max(ST_up, ST_up1) : ST_up
+ST_dn = ST_src + 3.0 * ST_atr
+ST_dn1 = nz(ST_dn[1], ST_dn)
+ST_dn := close[1] < ST_dn1 ? math.min(ST_dn, ST_dn1) : ST_dn
+ST_trend = 1
+ST_trend := nz(ST_trend[1], ST_trend)
+ST_trend := ST_trend == -1 and close > ST_dn1 ? 1 : ST_trend == 1 and close < ST_up1 ? -1 : ST_trend
+
+//RSIMa
+rsi = ta.rsi(close,13)
+rsiMA = ta.sma(rsi,70)
+
+//Emalar
+Ema32 = ta.ema(close, 32)
+Ema144 = ta.ema(close, 144)
+Ema200 = ta.ema(close, 200)
+
+plot(Ema32, color=(XGFark > 0 ? #51d1f8 : color.rgb(233, 45, 45)), linewidth=4, title="EMA 32")
+plot(Ema144, color=(ST_trend == 1 ? color.rgb(7, 252, 231) : color.rgb(233, 45, 45)), linewidth=4, title="EMA 144")
+plot(Ema200, color=(rsi > rsiMA ? color.green : color.red), linewidth=4, title="EMA 200")
